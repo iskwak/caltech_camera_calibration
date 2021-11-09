@@ -268,21 +268,25 @@ else
   quest_distort = input('fix by hand? ([]=no, other=yes) ');
   hand_clicked = false;
   if quest_distort
-    disp('select a region to zoom into, then press enter.');
+    disp('use the figure''s zoom tools to focus on a region. then press enter.');
     figure(100);
     clf
     ax = gca;
+    disableDefaultInteractivity(ax);
     image(I);
     colormap(map);
     hold on
     pause;
 
-    for iz = 1:42
-        [x, y] = ginput2(1);
-        plot(x, y, 'xr');
-        XX(1, iz) = x;
-        XX(2, iz) = y;
-    end
+    disp('click on corners.');
+    % for iz = 1:42
+    %     [x, y] = ginputc(1);
+    %     plot(x, y, 'xr');
+    %     XX(1, iz) = x;
+    %     XX(2, iz) = y;
+    % end
+    [x, y] = ginputc(42, 'showpoints', true);
+	XX = [x'; y'];
     hand_clicked = true;
   end
   %%%%%%%%%%%%%%%%%%%%% END ADDITIONAL STUFF IN THE CASE OF HIGHLY DISTORTED IMAGES %%%%%%%%%%%%%

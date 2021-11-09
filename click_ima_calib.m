@@ -77,123 +77,81 @@ if exist('load_corner_file','var') && ~isempty(load_corner_file),
   
 else
   
-  while true,
+  while true
+    [x, y] = get_rectangle(I, map, kk, wintx, winty);
+    [Xc,good,bad,type] = cornerfinder([x';y'],I,winty,wintx); % the four corners
+    
+    x = Xc(1,:)';
+    y = Xc(2,:)';
+    
+    
+    % Sort the corners:
+    x_mean = mean(x);
+    y_mean = mean(y);
+    x_v = x - x_mean;
+    y_v = y - y_mean;
+    
+    theta = atan2(-y_v,x_v);
+    [junk,ind] = sort(theta);
+    
+    [junk,ind] = sort(mod(theta-theta(1),2*pi));
+    
+    %ind = ind([2 3 4 1]);
+    
+    ind = ind([4 3 2 1]); %-> New: the Z axis is pointing uppward
+    
+    % x = x(ind);
+    % y = y(ind);
+    x1= x(1); x2 = x(2); x3 = x(3); x4 = x(4);
+    y1= y(1); y2 = y(2); y3 = y(3); y4 = y(4);
+    
+    
+    % Find center:
+    p_center = cross(cross([x1;y1;1],[x3;y3;1]),cross([x2;y2;1],[x4;y4;1]));
+    x5 = p_center(1)/p_center(3);
+    y5 = p_center(2)/p_center(3);
+    
+    % center on the X axis:
+    x6 = (x3 + x4)/2;
+    y6 = (y3 + y4)/2;
+    
+    % center on the Y axis:
+    x7 = (x1 + x4)/2;
+    y7 = (y1 + y4)/2;
+    
+    % Direction of displacement for the X axis:
+    vX = [x6-x5;y6-y5];
+    vX = vX / norm(vX);
+    
+    % Direction of displacement for the X axis:
+    vY = [x7-x5;y7-y5];
+    vY = vY / norm(vY);
+    
+    % Direction of diagonal:
+    vO = [x4 - x5; y4 - y5];
+    vO = vO / norm(vO);
+    
+    delta = 30;
+    
     
     figure(2);
-    fig2 = gcf;
     image(I);
     colormap(map);
-    set(fig2,'color',[1 1 1]);
-    
-    title(['Click on the four extreme corners of the rectangular pattern (first corner = origin)... Image ' num2str(kk)]);
-    
-    disp('Click on the four extreme corners of the rectangular complete pattern (the first clicked corner is the origin)...');
-    
-    x= [];y = [];
-    figure(fig2); hold on;
-    [x,y] = getline(fig2,'closed');
-    %
-    %   for count = 1:4,
-    %     [xi,yi] = ginput4(1);
-    %     [xxi] = cornerfinder([xi;yi],I,winty,wintx);
-    %     xi = xxi(1);
-    %     yi = xxi(2);
-    %     figure(2);
-    %     plot(xi,yi,'+','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    %     plot(xi + [wintx+.5 -(wintx+.5) -(wintx+.5) wintx+.5 wintx+.5],yi + [winty+.5 winty+.5 -(winty+.5) -(winty+.5)  winty+.5],'-','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    %     x = [x;xi];
-    %     y = [y;yi];
-    %     plot(x,y,'-','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    %     drawnow;
-    %   end;
-    x = x(1:4); y = y(1:4);
-    plot(x,y,'+','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    for i = 1:4,
-      xi = x(i);
-      yi = y(i);
-      plot(xi + [wintx+.5 -(wintx+.5) -(wintx+.5) wintx+.5 wintx+.5],yi + [winty+.5 winty+.5 -(winty+.5) -(winty+.5)  winty+.5],'-','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    end
-    plot([x;x(1)],[y;y(1)],'-','color',[ 1.000 0.314 0.510 ],'linewidth',2);
-    drawnow;
+    hold on;
+    plot([x;x(1)],[y;y(1)],'g-');
+    plot(x,y,'og');
+    hx=text(x6 + delta * vX(1) ,y6 + delta*vX(2),'X');
+    set(hx,'color','g','Fontsize',14);
+    hy=text(x7 + delta*vY(1), y7 + delta*vY(2),'Y');
+    set(hy,'color','g','Fontsize',14);
+    hO=text(x4 + delta * vO(1) ,y4 + delta*vO(2),'O','color','g','Fontsize',14);
     hold off;
-    
     res = input('Redo rectangle? 0 = no (default), 1 = yes: ');
     if isempty(res) || res == 0,
       break;
     end
   end
-  
-  
-  %[x,y] = ginput4(4);
-  
-  [Xc,good,bad,type] = cornerfinder([x';y'],I,winty,wintx); % the four corners
-  
-  x = Xc(1,:)';
-  y = Xc(2,:)';
-  
-  
-  % Sort the corners:
-  x_mean = mean(x);
-  y_mean = mean(y);
-  x_v = x - x_mean;
-  y_v = y - y_mean;
-  
-  theta = atan2(-y_v,x_v);
-  [junk,ind] = sort(theta);
-  
-  [junk,ind] = sort(mod(theta-theta(1),2*pi));
-  
-  %ind = ind([2 3 4 1]);
-  
-  ind = ind([4 3 2 1]); %-> New: the Z axis is pointing uppward
-  
-  % x = x(ind);
-  % y = y(ind);
-  x1= x(1); x2 = x(2); x3 = x(3); x4 = x(4);
-  y1= y(1); y2 = y(2); y3 = y(3); y4 = y(4);
-  
-  
-  % Find center:
-  p_center = cross(cross([x1;y1;1],[x3;y3;1]),cross([x2;y2;1],[x4;y4;1]));
-  x5 = p_center(1)/p_center(3);
-  y5 = p_center(2)/p_center(3);
-  
-  % center on the X axis:
-  x6 = (x3 + x4)/2;
-  y6 = (y3 + y4)/2;
-  
-  % center on the Y axis:
-  x7 = (x1 + x4)/2;
-  y7 = (y1 + y4)/2;
-  
-  % Direction of displacement for the X axis:
-  vX = [x6-x5;y6-y5];
-  vX = vX / norm(vX);
-  
-  % Direction of displacement for the X axis:
-  vY = [x7-x5;y7-y5];
-  vY = vY / norm(vY);
-  
-  % Direction of diagonal:
-  vO = [x4 - x5; y4 - y5];
-  vO = vO / norm(vO);
-  
-  delta = 30;
-  
-  
-  figure(2);
-  image(I);
-  colormap(map);
-  hold on;
-  plot([x;x(1)],[y;y(1)],'g-');
-  plot(x,y,'og');
-  hx=text(x6 + delta * vX(1) ,y6 + delta*vX(2),'X');
-  set(hx,'color','g','Fontsize',14);
-  hy=text(x7 + delta*vY(1), y7 + delta*vY(2),'Y');
-  set(hy,'color','g','Fontsize',14);
-  hO=text(x4 + delta * vO(1) ,y4 + delta*vO(2),'O','color','g','Fontsize',14);
-  hold off;
-  
+      
   
   if manual_squares,
     
@@ -308,14 +266,19 @@ else
   end;
 
   quest_distort = input('fix by hand? ([]=no, other=yes) ');
-  figure(100);
-  image(I);
-  colormap(map);
-  hold on
   hand_clicked = false;
   if quest_distort
+    disp('select a region to zoom into, then press enter.');
+    figure(100);
+    clf
+    ax = gca;
+    image(I);
+    colormap(map);
+    hold on
+    pause;
+
     for iz = 1:42
-        [x, y] = ginput3(1);
+        [x, y] = ginput2(1);
         plot(x, y, 'xr');
         XX(1, iz) = x;
         XX(2, iz) = y;
@@ -323,10 +286,6 @@ else
     hand_clicked = true;
   end
   %%%%%%%%%%%%%%%%%%%%% END ADDITIONAL STUFF IN THE CASE OF HIGHLY DISTORTED IMAGES %%%%%%%%%%%%%
-  
-  
-  
-  
   
   Np = (n_sq_x+1)*(n_sq_y+1);
   

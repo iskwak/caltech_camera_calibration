@@ -1,3 +1,5 @@
+Modified calibration code. Original readme below:
+
 Camera Calibration Toolbox for Matlab
 -------------------------------------
 
